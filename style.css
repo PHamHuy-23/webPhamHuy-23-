@@ -1,0 +1,134 @@
+/* ============================================================
+   style.css — 8-Puzzle DLS Visualizer
+   Retro Pixel Game Theme
+   ============================================================ */
+
+/* --- Font & Nền tổng thể --- */
+body {
+    font-family: 'VT323', monospace;
+    background-color: #0d0e15;
+    image-rendering: pixelated;
+}
+
+/* --- Tiêu đề pixel lớn với hiệu ứng bóng đôi màu --- */
+.pixel-title {
+    font-family: 'Press Start 2P', cursive;
+    text-shadow: 3px 3px 0px #cf1b1b, -3px -3px 0px #1bc2cf;
+}
+
+/* --- Font pixel nhỏ chung --- */
+.pixel-font {
+    font-family: 'Press Start 2P', cursive;
+}
+
+/* --- Viền pixel kiểu retro (trắng + đổ bóng đen) --- */
+.pixel-border {
+    border: 4px solid #fff;
+    box-shadow: 4px 4px 0px #000;
+}
+
+.pixel-border-green {
+    border: 4px solid #10b981;
+    box-shadow: 4px 4px 0px #047857;
+}
+
+.pixel-border-blue {
+    border: 4px solid #3b82f6;
+    box-shadow: 4px 4px 0px #1d4ed8;
+}
+
+.pixel-border-purple {
+    border: 4px solid #a855f7;
+    box-shadow: 4px 4px 0px #6b21a8;
+}
+
+/* --- Nút pixel với hiệu ứng nhấn --- */
+.pixel-btn {
+    font-family: 'Press Start 2P', cursive;
+    transition: all 0.1s ease;
+    position: relative;
+    top: 0;
+    left: 0;
+    box-shadow: 0px 6px 0px #1a1a1a;
+}
+
+.pixel-btn:active {
+    top: 4px;
+    box-shadow: 0px 2px 0px #1a1a1a;
+}
+
+/* Các màu nút */
+.pixel-btn-primary {
+    background-color: #f59e0b;
+    color: #000;
+    border: 3px solid #fff;
+}
+
+.pixel-btn-secondary {
+    background-color: #3b82f6;
+    color: #fff;
+    border: 3px solid #fff;
+}
+
+.pixel-btn-danger {
+    background-color: #ef4444;
+    color: #fff;
+    border: 3px solid #fff;
+}
+
+/* --- Thanh cuộn kiểu retro --- */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111827;
+    border-left: 2px solid #374151;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border: 2px solid #111827;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* --- Hiệu ứng phát sáng xanh cyan của bảng đang duyệt --- */
+@keyframes pulse-cyan {
+    0%, 100% { box-shadow: 0 0 10px #06b6d4; }
+    50%       { box-shadow: 0 0 20px #22d3ee; }
+}
+
+.current-board-glow {
+    animation: pulse-cyan 2s infinite;
+}
+
+/* --- Công tắc bật/tắt âm thanh kiểu retro --- */
+.retro-switch {
+    width: 50px;
+    height: 25px;
+    background-color: #374151;
+    position: relative;
+    border: 2px solid #fff;
+}
+
+.retro-switch-handle {
+    width: 20px;
+    height: 100%;
+    background-color: #ef4444;   /* Đỏ = OFF */
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: left 0.2s ease;
+    border-right: 2px solid #000;
+}
+
+/* Khi active: tay cầm dịch sang phải, chuyển xanh = ON */
+.retro-switch.active .retro-switch-handle {
+    left: 26px;
+    background-color: #10b981;
+    border-right: none;
+    border-left: 2px solid #000;
+}
