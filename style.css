@@ -1,134 +1,362 @@
 /* ============================================================
-   style.css — 8-Puzzle DLS Visualizer
-   Retro Pixel Game Theme
+   STYLE.CSS — AI Algorithm Visualizer
+   Retro Pixel / 8-bit Aesthetic
    ============================================================ */
 
-/* --- Font & Nền tổng thể --- */
-body {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --pixel-font: 'Press Start 2P', monospace;
+    --accent-yellow: #FFD700;
+    --accent-cyan: #00FFFF;
+    --accent-magenta: #FF00FF;
+    --accent-lime: #00FF00;
+    --dark-bg: #0a0e27;
+    --panel-bg: #1a1f3a;
+}
+
+html, body {
     font-family: 'VT323', monospace;
-    background-color: #0d0e15;
-    image-rendering: pixelated;
+    background: var(--dark-bg);
+    color: #e0e0e0;
+    line-height: 1.4;
+    overflow-x: hidden;
 }
 
-/* --- Tiêu đề pixel lớn với hiệu ứng bóng đôi màu --- */
-.pixel-title {
-    font-family: 'Press Start 2P', cursive;
-    text-shadow: 3px 3px 0px #cf1b1b, -3px -3px 0px #1bc2cf;
+/* HEADER */
+header {
+    background: linear-gradient(90deg, #000a1f, #1a1f3a);
+    border-bottom: 4px solid var(--accent-yellow);
+    padding: 1rem;
 }
 
-/* --- Font pixel nhỏ chung --- */
-.pixel-font {
-    font-family: 'Press Start 2P', cursive;
+header h1 {
+    font-family: var(--pixel-font);
+    font-size: 1.5rem;
+    color: var(--accent-yellow);
+    letter-spacing: 2px;
+    text-shadow: 2px 2px rgba(0,0,0,0.8);
+    margin-bottom: 0.5rem;
 }
 
-/* --- Viền pixel kiểu retro (trắng + đổ bóng đen) --- */
-.pixel-border {
-    border: 4px solid #fff;
-    box-shadow: 4px 4px 0px #000;
+header p {
+    font-size: 0.7rem;
+    color: var(--accent-cyan);
+    letter-spacing: 1px;
 }
 
-.pixel-border-green {
-    border: 4px solid #10b981;
-    box-shadow: 4px 4px 0px #047857;
+/* MAIN LAYOUT */
+main {
+    display: grid;
+    grid-template-columns: 300px 1fr 1fr;
+    gap: 1rem;
+    padding: 0 1rem 1rem 1rem;
+    max-width: 1600px;
+    margin: 0 auto;
+    min-height: calc(100vh - 120px);
 }
 
-.pixel-border-blue {
-    border: 4px solid #3b82f6;
-    box-shadow: 4px 4px 0px #1d4ed8;
+/* SECTION STYLES */
+section {
+    background: var(--panel-bg);
+    border: 3px solid;
+    padding: 1rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.pixel-border-purple {
-    border: 4px solid #a855f7;
-    box-shadow: 4px 4px 0px #6b21a8;
+section h2 {
+    font-family: var(--pixel-font);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    border-bottom: 2px solid currentColor;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
-/* --- Nút pixel với hiệu ứng nhấn --- */
-.pixel-btn {
-    font-family: 'Press Start 2P', cursive;
-    transition: all 0.1s ease;
-    position: relative;
-    top: 0;
-    left: 0;
-    box-shadow: 0px 6px 0px #1a1a1a;
+/* CONTROL PANEL */
+#controlPanel {
+    border-color: var(--accent-yellow);
+    color: var(--accent-yellow);
+    grid-row: 1 / -1;
+    overflow-y: auto;
 }
 
-.pixel-btn:active {
-    top: 4px;
-    box-shadow: 0px 2px 0px #1a1a1a;
+.control-group {
+    border: 2px solid #3a4580;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background: rgba(0, 0, 0, 0.3);
 }
 
-/* Các màu nút */
-.pixel-btn-primary {
-    background-color: #f59e0b;
+.control-group label {
+    display: block;
+    font-size: 0.6rem;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.control-group .label-value {
+    float: right;
+    color: var(--accent-yellow);
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6rem;
+}
+
+/* PUZZLE BOARD */
+#puzzleBoard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 180px;
+    height: 180px;
+    margin: 1rem auto;
+    background: #000;
+    border: 4px solid var(--accent-cyan);
+    padding: 8px;
+}
+
+.puzzle-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #4a9eff, #0088ff);
+    border: 3px solid var(--accent-cyan);
     color: #000;
-    border: 3px solid #fff;
+    font-family: var(--pixel-font);
+    font-size: 1.2rem;
+    font-weight: bold;
+    box-shadow: inset -2px -2px 0 rgba(0,0,0,0.4);
+}
+
+.puzzle-tile.correct {
+    background: linear-gradient(135deg, #88ff00, #00ff00);
+    border-color: var(--accent-lime);
+}
+
+.puzzle-tile.empty {
+    background: #1a1f3a;
+    border: 2px dashed #555;
+    color: #555;
+}
+
+/* MAZE BOARD */
+#mazeBoard {
+    display: grid;
+    width: 100%;
+    aspect-ratio: 1;
+    gap: 1px;
+    background: #000;
+    border: 3px solid var(--accent-magenta);
+    padding: 0.5rem;
+}
+
+.maze-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5rem;
+    font-weight: bold;
+    transition: background 0.15s;
+    border: 1px solid #1a1a1a;
+}
+
+.maze-cell.wall { background: #000; }
+.maze-cell.empty { background: #2a3a5a; color: #666; }
+.maze-cell.start { background: linear-gradient(135deg, #00aa44, #00ff66); color: #000; }
+.maze-cell.goal { background: linear-gradient(135deg, #ffaa00, #ffff00); color: #000; }
+.maze-cell.frontier { background: #4a7fff; color: #fff; }
+.maze-cell.reached { background: #5a3a8a; color: #aaa; }
+.maze-cell.path { background: linear-gradient(135deg, #ff1493, #ff69b4); color: #fff; }
+
+/* VISUALIZATION PANEL */
+#vizPanel {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    grid-column: 2;
+}
+
+.viz-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid #3a4580;
+    min-height: 300px;
+}
+
+/* DATA TABLE PANEL */
+#tablePanel {
+    border-color: var(--accent-magenta);
+    color: var(--accent-magenta);
+    grid-column: 3;
+    overflow: hidden;
+}
+
+.table-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    border: 2px solid #3a4580;
+    max-height: 400px;
+}
+
+#dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.6rem;
+    font-family: 'VT323', monospace;
+}
+
+#dataTable th {
+    background: #2a1a4a;
+    color: var(--accent-magenta);
+    border: 2px solid var(--accent-magenta);
+    padding: 0.5rem;
+    text-align: left;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+#dataTable td {
+    background: #1a1a2a;
+    border: 1px solid #3a2a5a;
+    padding: 0.4rem;
+    word-wrap: break-word;
+    max-width: 120px;
+    vertical-align: top;
+}
+
+#dataTable tr:hover td {
+    background: #2a2a3a;
+}
+
+#dataTable tr.solution-row td {
+    background: #1a4a1a;
+    color: var(--accent-lime);
+    font-weight: bold;
+}
+
+/* BUTTONS */
+.pixel-btn {
+    font-family: var(--pixel-font);
+    font-size: 0.6rem;
+    padding: 0.6rem 1rem;
+    border: 3px solid;
+    background: #1a1f3a;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.1s;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.pixel-btn:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.pixel-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: #666;
+}
+
+.pixel-btn-primary {
+    background: linear-gradient(135deg, #00FFFF, #0099FF);
+    border-color: var(--accent-cyan);
+    color: #000;
+    font-weight: bold;
 }
 
 .pixel-btn-secondary {
-    background-color: #3b82f6;
-    color: #fff;
-    border: 3px solid #fff;
+    background: #2a2f4a;
+    border-color: #4a5f8a;
+    color: var(--accent-cyan);
 }
 
 .pixel-btn-danger {
-    background-color: #ef4444;
-    color: #fff;
-    border: 3px solid #fff;
+    background: #8a2f2f;
+    border-color: #FF0000;
+    color: var(--accent-yellow);
 }
 
-/* --- Thanh cuộn kiểu retro --- */
+/* INPUTS */
+input[type="number"],
+input[type="range"],
+select {
+    font-family: 'VT323', monospace;
+    background: var(--panel-bg);
+    border: 2px solid #3a4580;
+    color: var(--accent-cyan);
+    padding: 0.4rem;
+    font-size: 0.7rem;
+}
+
+input[type="number"]:focus,
+input[type="range"]:focus,
+select:focus {
+    outline: none;
+    border-color: var(--accent-yellow);
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    cursor: pointer;
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent-cyan);
+}
+
+/* SCROLLBAR */
 ::-webkit-scrollbar {
-    width: 12px;
+    width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #111827;
-    border-left: 2px solid #374151;
+    background: #0a0a1a;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #4b5563;
-    border: 2px solid #111827;
+    background: var(--accent-cyan);
+    border: 1px solid #2a2a4a;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
+/* UTILITIES */
+.hidden {
+    display: none !important;
 }
 
-/* --- Hiệu ứng phát sáng xanh cyan của bảng đang duyệt --- */
-@keyframes pulse-cyan {
-    0%, 100% { box-shadow: 0 0 10px #06b6d4; }
-    50%       { box-shadow: 0 0 20px #22d3ee; }
+.text-center {
+    text-align: center;
 }
 
-.current-board-glow {
-    animation: pulse-cyan 2s infinite;
-}
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+    main {
+        grid-template-columns: 1fr;
+    }
 
-/* --- Công tắc bật/tắt âm thanh kiểu retro --- */
-.retro-switch {
-    width: 50px;
-    height: 25px;
-    background-color: #374151;
-    position: relative;
-    border: 2px solid #fff;
-}
-
-.retro-switch-handle {
-    width: 20px;
-    height: 100%;
-    background-color: #ef4444;   /* Đỏ = OFF */
-    position: absolute;
-    top: 0;
-    left: 0;
-    transition: left 0.2s ease;
-    border-right: 2px solid #000;
-}
-
-/* Khi active: tay cầm dịch sang phải, chuyển xanh = ON */
-.retro-switch.active .retro-switch-handle {
-    left: 26px;
-    background-color: #10b981;
-    border-right: none;
-    border-left: 2px solid #000;
+    #vizPanel, #tablePanel {
+        grid-column: 1;
+    }
 }
