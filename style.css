@@ -52,10 +52,10 @@ header p {
 /* MAIN LAYOUT */
 main {
     display: grid;
-    grid-template-columns: 300px 1fr 1fr;
+    grid-template-columns: minmax(250px, 20%) minmax(400px, 50%) minmax(300px, 30%);
     gap: 1rem;
     padding: 0 1rem 1rem 1rem;
-    max-width: 1600px;
+    max-width: 1800px;
     margin: 0 auto;
     min-height: calc(100vh - 120px);
 }
@@ -127,12 +127,12 @@ section h2 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    width: 180px;
-    height: 180px;
-    margin: 1rem auto;
+    width: 300px;
+    height: 300px;
+    margin: 2rem auto 1rem auto;
     background: #000;
     border: 4px solid var(--accent-cyan);
-    padding: 8px;
+    padding: 10px;
 }
 
 .puzzle-tile {
@@ -143,7 +143,7 @@ section h2 {
     border: 3px solid var(--accent-cyan);
     color: #000;
     font-family: var(--pixel-font);
-    font-size: 1.2rem;
+    font-size: 1.8rem;
     font-weight: bold;
     box-shadow: inset -2px -2px 0 rgba(0,0,0,0.4);
 }
@@ -193,16 +193,29 @@ section h2 {
     border-color: var(--accent-cyan);
     color: var(--accent-cyan);
     grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .viz-container {
-    flex: 1;
+    flex: 2;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     background: rgba(0, 0, 0, 0.5);
     border: 2px solid #3a4580;
-    min-height: 300px;
+    min-height: 400px;
+}
+
+.metrics-display {
+    flex: 0 0 auto;
+    border: 2px solid #3a4580;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    font-size: 0.7rem;
+    line-height: 1.8;
 }
 
 /* DATA TABLE PANEL */
@@ -211,13 +224,24 @@ section h2 {
     color: var(--accent-magenta);
     grid-column: 3;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-.table-wrapper {
+.table-wrapper,
+.tree-diagram-wrapper {
     flex: 1;
     overflow-y: auto;
+    overflow-x: auto;
     border: 2px solid #3a4580;
-    max-height: 400px;
+}
+
+#treeDiagram {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    min-width: max-content;
 }
 
 #dataTable {
@@ -348,6 +372,88 @@ input[type="checkbox"] {
 
 .text-center {
     text-align: center;
+}
+
+/* NODE CARD STYLING */
+.node-card {
+    border: 2px solid #3a4580;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+#treeDiagramWrapper .node-card {
+    padding: 0.4rem;
+    margin-bottom: 0.25rem;
+    min-width: 90px;
+    font-size: 0.5rem;
+}
+
+.node-card:hover {
+    border-color: var(--accent-cyan);
+    background: rgba(0, 100, 200, 0.1);
+}
+
+.node-card.current {
+    border-color: var(--accent-yellow);
+    background: rgba(200, 200, 0, 0.1);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.node-card.expanded {
+    opacity: 0.6;
+}
+
+.node-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 0.5rem auto;
+    background: #000;
+    border: 2px solid #3a4580;
+    padding: 3px;
+}
+
+.node-mini-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #2a4f5f;
+    border: 1px solid #3a4580;
+    font-size: 0.55rem;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+.node-mini-tile.correct {
+    background: #005f00;
+    color: #00ff00;
+}
+
+.node-mini-tile.empty {
+    background: #1a1f3a;
+    border: 1px dashed #555;
+    color: #555;
+}
+
+.node-metadata {
+    font-size: 0.55rem;
+    line-height: 1.6;
+    color: #a0a0a0;
+}
+
+.node-metadata strong {
+    color: var(--accent-cyan);
+}
+
+.node-metadata-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
 }
 
 /* RESPONSIVE */

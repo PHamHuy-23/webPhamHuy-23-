@@ -27,6 +27,11 @@ const state = {
     mazeFrontier: new Set(),
     mazeReached: new Set(),
     mazePath: [],
+
+    // Node tracking for tree visualization
+    nodeRegistry: new Map(),
+    currentNodeId: null,
+    treeRootId: null
 };
 
 let searchIterator = null;
@@ -143,6 +148,7 @@ function* puzzleBFS() {
     let stateId = 0;
     const queue = [{ state: state.puzzleBoard, path: [], depth: 0, id: ++stateId }];
     const reached = new Set([JSON.stringify(state.puzzleBoard)]);
+    state.treeRootId = stateId;
 
     while (queue.length > 0) {
         const current = queue.shift();
@@ -158,7 +164,8 @@ function* puzzleBFS() {
             const key = JSON.stringify(newState);
             if (!reached.has(key)) {
                 reached.add(key);
-                const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id };
+                const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, action };
+                state.nodeRegistry.set(newNode.id, newNode);
 
                 if (state.goalCheck === 'generation' && JSON.stringify(newState) === JSON.stringify(state.puzzleGoal)) {
                     yield { event: 'success', node: newNode };
@@ -178,6 +185,7 @@ function* puzzleDFS() {
     let stateId = 0;
     const stack = [{ state: state.puzzleBoard, path: [], depth: 0, id: ++stateId }];
     const reached = new Set([JSON.stringify(state.puzzleBoard)]);
+    state.treeRootId = stateId;
 
     while (stack.length > 0) {
         const current = stack.pop();
@@ -195,7 +203,8 @@ function* puzzleDFS() {
             const key = JSON.stringify(newState);
             if (!reached.has(key)) {
                 reached.add(key);
-                const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id };
+                const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, action };
+                state.nodeRegistry.set(newNode.id, newNode);
 
                 if (state.goalCheck === 'generation' && JSON.stringify(newState) === JSON.stringify(state.puzzleGoal)) {
                     yield { event: 'success', node: newNode };
@@ -215,6 +224,7 @@ function* puzzleDLS(depthLimit) {
     let stateId = 0;
     const stack = [{ state: state.puzzleBoard, path: [], depth: 0, id: ++stateId }];
     const reached = new Set([JSON.stringify(state.puzzleBoard)]);
+    state.treeRootId = stateId;
 
     while (stack.length > 0) {
         const current = stack.pop();
@@ -235,7 +245,8 @@ function* puzzleDLS(depthLimit) {
                 const key = JSON.stringify(newState);
                 if (!reached.has(key)) {
                     reached.add(key);
-                    const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id };
+                    const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, action };
+                    state.nodeRegistry.set(newNode.id, newNode);
 
                     if (state.goalCheck === 'generation' && JSON.stringify(newState) === JSON.stringify(state.puzzleGoal)) {
                         yield { event: 'success', node: newNode };
@@ -256,6 +267,7 @@ function* puzzleGreedy() {
     let stateId = 0;
     const queue = [{ state: state.puzzleBoard, path: [], depth: 0, id: ++stateId, h: puzzleHeuristic(state.puzzleBoard) }];
     const reached = new Set([JSON.stringify(state.puzzleBoard)]);
+    state.treeRootId = stateId;
 
     while (queue.length > 0) {
         queue.sort((a, b) => a.h - b.h);
@@ -273,7 +285,8 @@ function* puzzleGreedy() {
             if (!reached.has(key)) {
                 reached.add(key);
                 const h = puzzleHeuristic(newState);
-                const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, h };
+                const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, action, h };
+                state.nodeRegistry.set(newNode.id, newNode);
 
                 if (state.goalCheck === 'generation' && JSON.stringify(newState) === JSON.stringify(state.puzzleGoal)) {
                     yield { event: 'success', node: newNode };
@@ -311,7 +324,8 @@ function* puzzleAStar() {
                 reached.add(key);
                 const g = current.g + 1;
                 const h = puzzleHeuristic(newState);
-                const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, g, h };
+                const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, action, g, h };
+                state.nodeRegistry.set(newNode.id, newNode);
 
                 if (state.goalCheck === 'generation' && JSON.stringify(newState) === JSON.stringify(state.puzzleGoal)) {
                     yield { event: 'success', node: newNode };
@@ -325,6 +339,207 @@ function* puzzleAStar() {
     }
 
     yield { event: 'fail' };
+}
+
+function* puzzleIDA() {
+    const h0 = puzzleHeuristic(state.puzzleBoard);
+    let I0 = h0;
+    let threshold = I0;
+    const reached = new Set();
+
+    while (true) {
+        reached.clear();
+        let min = Infinity;
+        let foundGoal = false;
+
+        yield { event: 'iteration_start', I_0: I0, alpha: threshold, iteration: I0 };
+
+        function* dfs(currentState, g, path, currentId) {
+            const pathStr = JSON.stringify(currentState);
+            if (reached.has(pathStr)) return;
+            reached.add(pathStr);
+
+            const h = puzzleHeuristic(currentState);
+            const f = g + h;
+
+            if (state.goalCheck === 'evaluation' && JSON.stringify(currentState) === JSON.stringify(state.puzzleGoal)) {
+                yield { event: 'success', node: { state: currentState, path, depth: g, id: currentId, g, h } };
+                foundGoal = true;
+                return;
+            }
+
+            if (f > threshold) {
+                if (f < min) min = f;
+                return;
+            }
+
+            yield { event: 'expanding', node: { state: currentState, path, depth: g, id: currentId, g, h } };
+
+            for (const { state: newState, action } of getPuzzleNeighbors(currentState)) {
+                const newId = currentId + 1000;
+                const newNode = { state: newState, path: [...path, action], depth: g + 1, id: newId, parentId: currentId, action, g: g + 1, h: puzzleHeuristic(newState) };
+                state.nodeRegistry.set(newNode.id, newNode);
+
+                if (state.goalCheck === 'generation' && JSON.stringify(newState) === JSON.stringify(state.puzzleGoal)) {
+                    yield { event: 'success', node: newNode };
+                    foundGoal = true;
+                    return;
+                }
+
+                yield* dfs(newState, g + 1, [...path, action], newId);
+                if (foundGoal) return;
+            }
+        }
+
+        let nodeId = 0;
+        const rootNode = { state: state.puzzleBoard, path: [], depth: 0, id: ++nodeId, g: 0, h: h0 };
+        state.nodeRegistry.set(rootNode.id, rootNode);
+        state.treeRootId = rootNode.id;
+
+        yield* dfs(state.puzzleBoard, 0, [], nodeId);
+
+        if (foundGoal) return;
+        if (min === Infinity) {
+            yield { event: 'fail' };
+            return;
+        }
+
+        threshold = min;
+    }
+}
+
+function* puzzleSimpleHC() {
+    let stateId = 0;
+    let current = { state: state.puzzleBoard, path: [], depth: 0, id: ++stateId, h: puzzleHeuristic(state.puzzleBoard) };
+    state.nodeRegistry.set(current.id, current);
+    state.treeRootId = current.id;
+
+    if (JSON.stringify(current.state) === JSON.stringify(state.puzzleGoal)) {
+        yield { event: 'success', node: current };
+        return;
+    }
+
+    while (true) {
+        yield { event: 'expanding', node: current };
+
+        const neighbors = getPuzzleNeighbors(current.state);
+        let foundBetter = false;
+
+        for (const { state: newState, action } of neighbors) {
+            const h = puzzleHeuristic(newState);
+            const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, action, h };
+            state.nodeRegistry.set(newNode.id, newNode);
+
+            yield { event: 'evaluating', node: newNode };
+
+            if (h < current.h) {
+                current = newNode;
+                foundBetter = true;
+                yield { event: 'moving', node: current };
+
+                if (JSON.stringify(current.state) === JSON.stringify(state.puzzleGoal)) {
+                    yield { event: 'success', node: current };
+                    return;
+                }
+
+                break;
+            }
+        }
+
+        if (!foundBetter) {
+            yield { event: 'local_maximum', node: current };
+            return;
+        }
+    }
+}
+
+function* puzzleSteepestHC() {
+    let stateId = 0;
+    let current = { state: state.puzzleBoard, path: [], depth: 0, id: ++stateId, h: puzzleHeuristic(state.puzzleBoard) };
+    state.nodeRegistry.set(current.id, current);
+    state.treeRootId = current.id;
+
+    if (JSON.stringify(current.state) === JSON.stringify(state.puzzleGoal)) {
+        yield { event: 'success', node: current };
+        return;
+    }
+
+    while (true) {
+        yield { event: 'expanding', node: current };
+
+        const neighbors = getPuzzleNeighbors(current.state);
+        let best = null;
+
+        for (const { state: newState, action } of neighbors) {
+            const h = puzzleHeuristic(newState);
+            const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, action, h };
+            state.nodeRegistry.set(newNode.id, newNode);
+
+            yield { event: 'evaluating', node: newNode };
+
+            if (!best || h < best.h) {
+                best = newNode;
+            }
+        }
+
+        if (best && best.h < current.h) {
+            current = best;
+            yield { event: 'moving', node: current };
+
+            if (JSON.stringify(current.state) === JSON.stringify(state.puzzleGoal)) {
+                yield { event: 'success', node: current };
+                return;
+            }
+        } else {
+            yield { event: 'local_maximum', node: current };
+            return;
+        }
+    }
+}
+
+function* puzzleStochasticHC() {
+    let stateId = 0;
+    let current = { state: state.puzzleBoard, path: [], depth: 0, id: ++stateId, h: puzzleHeuristic(state.puzzleBoard) };
+    state.nodeRegistry.set(current.id, current);
+    state.treeRootId = current.id;
+
+    if (JSON.stringify(current.state) === JSON.stringify(state.puzzleGoal)) {
+        yield { event: 'success', node: current };
+        return;
+    }
+
+    while (true) {
+        yield { event: 'expanding', node: current };
+
+        const neighbors = getPuzzleNeighbors(current.state);
+        const improving = [];
+
+        for (const { state: newState, action } of neighbors) {
+            const h = puzzleHeuristic(newState);
+            const newNode = { state: newState, path: [...current.path, action], depth: current.depth + 1, id: ++stateId, parentId: current.id, action, h };
+            state.nodeRegistry.set(newNode.id, newNode);
+
+            yield { event: 'evaluating', node: newNode };
+
+            if (h < current.h) {
+                improving.push(newNode);
+            }
+        }
+
+        if (improving.length > 0) {
+            const randomIdx = Math.floor(Math.random() * improving.length);
+            current = improving[randomIdx];
+            yield { event: 'moving', node: current };
+
+            if (JSON.stringify(current.state) === JSON.stringify(state.puzzleGoal)) {
+                yield { event: 'success', node: current };
+                return;
+            }
+        } else {
+            yield { event: 'local_maximum', node: current };
+            return;
+        }
+    }
 }
 
 function* mazeBFS() {
@@ -547,7 +762,117 @@ function addTableRow(node, eventType) {
     tbody.parentElement.scrollTop = tbody.parentElement.scrollHeight;
 }
 
+function renderNodeCard(node) {
+    const card = document.createElement('div');
+    card.className = `node-card ${node.visualState || ''}`;
+    if (state.currentNodeId === node.id) card.classList.add('current');
+
+    // Mini 3x3 grid
+    let gridHTML = '<div class="node-mini-grid">';
+    for (let i = 0; i < 9; i++) {
+        const val = node.state[i];
+        const isCorrect = val === state.puzzleGoal[i] && val !== 0;
+        const isEmpty = val === 0;
+        gridHTML += `<div class="node-mini-tile ${isEmpty ? 'empty' : ''} ${isCorrect ? 'correct' : ''}">${isEmpty ? '' : val}</div>`;
+    }
+    gridHTML += '</div>';
+
+    // Metadata
+    const parentLabel = node.parentId !== undefined ? `#${node.parentId}` : 'ROOT';
+    const moveLabel = node.action || '—';
+    const hValue = node.h !== undefined ? node.h.toFixed(0) : '—';
+    const fValue = node.g !== undefined && node.h !== undefined ? (node.g + node.h).toFixed(0) : '—';
+
+    card.innerHTML = gridHTML + `
+        <div class="node-metadata">
+            <div class="node-metadata-row"><span>ID:</span> <strong>#${node.id}</strong></div>
+            <div class="node-metadata-row"><span>Parent:</span> <strong>${parentLabel}</strong></div>
+            <div class="node-metadata-row"><span>Move:</span> <strong>${moveLabel}</strong></div>
+            <div class="node-metadata-row"><span>Depth:</span> <strong>${node.depth}</strong></div>
+            <div class="node-metadata-row"><span>h(n):</span> <strong>${hValue}</strong></div>
+            ${node.g !== undefined ? `<div class="node-metadata-row"><span>f(n):</span> <strong>${fValue}</strong></div>` : ''}
+        </div>
+    `;
+
+    return card;
+}
+
+function renderTreeDiagram() {
+    const container = document.getElementById('treeDiagram');
+    container.innerHTML = '';
+
+    if (!state.treeRootId || state.nodeRegistry.size === 0) return;
+
+    const root = state.nodeRegistry.get(state.treeRootId);
+    if (!root) return;
+
+    // Build tree structure recursively with compact layout
+    function buildTreeHTML(nodeId, depth = 0) {
+        const node = state.nodeRegistry.get(nodeId);
+        if (!node) return '';
+
+        const children = [...state.nodeRegistry.values()].filter(n => n.parentId === nodeId);
+        const isCurrentNode = state.currentNodeId === nodeId;
+
+        // Use max depth of 4 to prevent excessive indentation
+        const indentLevel = Math.min(depth, 4);
+        const indentPx = indentLevel * 15;
+
+        let html = `<div style="margin-left: ${indentPx}px; margin-bottom: 0.25rem; flex-shrink: 0;">`;
+        html += `<div class="node-card ${isCurrentNode ? 'current' : ''}" style="cursor: pointer; min-width: 90px;">`;
+        html += `<div style="font-size: 0.55rem; font-weight: bold; line-height: 1.2;">#${node.id}</div>`;
+        html += `<div style="font-size: 0.5rem; color: var(--accent-cyan); line-height: 1.2;">h=${node.h !== undefined ? node.h.toFixed(0) : '—'}</div>`;
+        if (node.action) html += `<div style="font-size: 0.5rem; color: #a0a0a0; line-height: 1.2;">${node.action}</div>`;
+        html += `</div>`;
+
+        if (children.length > 0) {
+            for (const child of children) {
+                html += buildTreeHTML(child.id, depth + 1);
+            }
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    container.innerHTML = buildTreeHTML(state.treeRootId);
+}
+
+function updateTreeHighlight(nodeId) {
+    state.currentNodeId = nodeId;
+    const node = state.nodeRegistry.get(nodeId);
+    if (node) node.visualState = 'current';
+    renderTreeDiagram();
+}
+
 // ===== MAIN CONTROLS =====
+
+function isHillClimbingAlgorithm() {
+    return ['simple_hc', 'steepest_hc', 'stochastic_hc'].includes(state.algorithm);
+}
+
+function updateVisualizationMode() {
+    const tableWrapper = document.getElementById('tableWrapper');
+    const treeDiagramWrapper = document.getElementById('treeDiagramWrapper');
+    const tableTitle = document.getElementById('tableTitle');
+
+    if (isHillClimbingAlgorithm()) {
+        tableWrapper.style.display = 'none';
+        treeDiagramWrapper.style.display = 'block';
+        tableTitle.textContent = '🌳 TREE DIAGRAM';
+        document.getElementById('metricsDisplay').style.display = 'none';
+    } else if (state.algorithm === 'ida') {
+        tableWrapper.style.display = 'block';
+        treeDiagramWrapper.style.display = 'none';
+        tableTitle.textContent = '📊 STATE TRACKING';
+        document.getElementById('metricsDisplay').style.display = 'block';
+    } else {
+        tableWrapper.style.display = 'block';
+        treeDiagramWrapper.style.display = 'none';
+        tableTitle.textContent = '📊 STATE TRACKING';
+        document.getElementById('metricsDisplay').style.display = 'none';
+    }
+}
 
 function switchMode(mode) {
     state.mode = mode;
@@ -620,8 +945,14 @@ function startSolving() {
     document.getElementById('stepBtn').disabled = false;
 
     document.getElementById('tableBody').innerHTML = '';
+    document.getElementById('treeDiagram').innerHTML = '';
     state.stateCounter = 0;
+    state.nodeRegistry.clear();
+    state.currentNodeId = null;
+    state.treeRootId = null;
     state.isRunning = true;
+
+    updateVisualizationMode();
 
     // Create appropriate generator
     if (state.mode === 'puzzle') {
@@ -630,6 +961,10 @@ function startSolving() {
         else if (state.algorithm === 'dls') searchIterator = puzzleDLS(parseInt(document.getElementById('dlsLimit').value));
         else if (state.algorithm === 'greedy') searchIterator = puzzleGreedy();
         else if (state.algorithm === 'astar') searchIterator = puzzleAStar();
+        else if (state.algorithm === 'ida') searchIterator = puzzleIDA();
+        else if (state.algorithm === 'simple_hc') searchIterator = puzzleSimpleHC();
+        else if (state.algorithm === 'steepest_hc') searchIterator = puzzleSteepestHC();
+        else if (state.algorithm === 'stochastic_hc') searchIterator = puzzleStochasticHC();
     } else {
         if (state.algorithm === 'bfs') searchIterator = mazeBFS();
         else if (state.algorithm === 'dfs') searchIterator = mazeDFS();
@@ -670,7 +1005,21 @@ function nextStep() {
         if (reached) state.mazeReached = new Set(reached);
     }
 
-    addTableRow(node, event);
+    // Handle IDA* metrics
+    if (event === 'iteration_start') {
+        document.getElementById('boundValue').textContent = result.value.I_0.toFixed(0);
+        document.getElementById('alphaValue').textContent = result.value.alpha.toFixed(0);
+        document.getElementById('iterationValue').textContent = result.value.iteration.toFixed(0);
+    }
+
+    // Update tree for hill-climbing algorithms
+    if (isHillClimbingAlgorithm()) {
+        state.currentNodeId = node.id;
+        renderTreeDiagram();
+    } else {
+        // Update table for traditional algorithms
+        addTableRow(node, event);
+    }
 
     if (state.mode === 'puzzle') {
         renderPuzzleBoard(node.state);
@@ -686,6 +1035,9 @@ function nextStep() {
         stopSolving();
     } else if (event === 'fail') {
         showModal('❌ FAILED', 'No solution found!');
+        stopSolving();
+    } else if (event === 'local_maximum') {
+        showModal('⛰️ LOCAL MAXIMUM', `Reached local maximum at h(n) = ${node.h}. No improving neighbors found.`);
         stopSolving();
     }
 }

@@ -58,6 +58,22 @@
                     <input type="radio" name="algorithm" value="astar">
                     A*
                 </label>
+                <label>
+                    <input type="radio" name="algorithm" value="ida">
+                    IDA*
+                </label>
+                <label>
+                    <input type="radio" name="algorithm" value="simple_hc">
+                    SIMPLE HC
+                </label>
+                <label>
+                    <input type="radio" name="algorithm" value="steepest_hc">
+                    STEEPEST HC
+                </label>
+                <label>
+                    <input type="radio" name="algorithm" value="stochastic_hc">
+                    STOCHASTIC HC
+                </label>
             </div>
         </div>
 
@@ -119,6 +135,11 @@
     <!-- ===== MIDDLE: VISUALIZATION PANEL ===== -->
     <section id="vizPanel">
         <h2>🖥️ VISUALIZATION</h2>
+        <div class="metrics-display" id="metricsDisplay" style="display:none;">
+            <div>Bound: <strong id="boundValue">—</strong></div>
+            <div>Threshold (α): <strong id="alphaValue">—</strong></div>
+            <div>Iteration: <strong id="iterationValue">—</strong></div>
+        </div>
         <div class="viz-container">
             <div id="puzzleBoard"></div>
             <div id="mazeBoard" class="hidden"></div>
@@ -127,20 +148,28 @@
 
     <!-- ===== RIGHT: DATA TABLE PANEL ===== -->
     <section id="tablePanel">
-        <h2>📊 STATE TRACKING</h2>
-        <div class="table-wrapper">
-            <table id="dataTable">
-                <thead>
-                    <tr>
-                        <th>State Index</th>
-                        <th>Current State</th>
-                        <th>Frontier Size</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- Rows will be inserted here -->
-                </tbody>
-            </table>
+        <div class="data-panel-right">
+            <h2 id="tableTitle" style="margin-bottom: 0.5rem; flex-shrink: 0;">📊 STATE TRACKING</h2>
+
+            <div class="data-steps-container">
+                <div class="table-wrapper" id="tableWrapper">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>State Index</th>
+                                <th>Current State</th>
+                                <th>Frontier Size</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="treeDiagramWrapper" style="display:none;">
+                    <div id="treeDiagram"></div>
+                </div>
+            </div>
         </div>
     </section>
 </main>
